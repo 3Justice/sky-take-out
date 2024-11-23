@@ -19,3 +19,7 @@ sky:
   wechat:
     appid: xxx
     secret: yyy
+  shop:
+    address: 北京市海淀区上地十街10号
+  baidu:
+    ak: 123456
