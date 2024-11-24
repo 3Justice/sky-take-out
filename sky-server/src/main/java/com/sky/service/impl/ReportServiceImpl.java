@@ -1,9 +1,12 @@
 package com.sky.service.impl;
 
 import com.sky.entity.Orders;
+import com.sky.entity.User;
 import com.sky.mapper.OrderMapper;
+import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
 import com.sky.vo.TurnoverReportVO;
+import com.sky.vo.UserReportVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +27,8 @@ public class ReportServiceImpl implements ReportService {
 
     @Autowired
     private OrderMapper orderMapper;
+    @Autowired
+    private UserMapper userMapper;
 
     /**
      * 统计营业额
@@ -62,5 +67,49 @@ public class ReportServiceImpl implements ReportService {
                 .turnoverList(StringUtils.join(turnoverlist,","))
                 .build();
     }
+
+    /**
+     * 统计用户
+     * @param begin
+     * @param end
+     * @return
+     */
+    public UserReportVO getUserStatistics(LocalDate begin, LocalDate end) {
+        List<LocalDate> dateList = new ArrayList<>();
+        dateList.add(begin);
+        while (!begin.equals(end)) {
+            //从第一天开始，把结束前每一天都加入list中
+            begin = begin.plusDays(1);
+            dateList.add(begin);
+        }
+
+        //新增用户
+        List<Integer> newUserList = new ArrayList<>();
+        //总用户
+        List<Integer> totalUserList = new ArrayList<>();
+
+        for (LocalDate date : dateList) {
+            LocalDateTime beginTime = LocalDateTime.of(date, LocalTime.MIN);
+            LocalDateTime endTime = LocalDateTime.of(date, LocalTime.MAX);
+
+            Map map = new HashMap();
+            map.put("end", endTime);
+
+            Integer totalUser = userMapper.countByMap(map);
+
+            map.put("begin", beginTime);
+
+            Integer newUser = userMapper.countByMap(map);
+            totalUserList.add(totalUser);
+            newUserList.add(newUser);
+
+        }
+
+        return UserReportVO.builder()
+                .dateList(StringUtils.join(totalUserList,","))
+                .newUserList(StringUtils.join(newUserList,","))
+                .build();
+    }
+
 
 }
